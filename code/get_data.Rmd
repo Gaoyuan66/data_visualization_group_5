@@ -1,0 +1,62 @@
+---
+title: "Get Data"
+output: html_document
+---
+
+```{r, echo=FALSE}
+library(spotifyr)
+library(lubridate)
+library(dplyr)
+library(purrr)
+library(knitr)
+```
+
+# Data Analytics and Visualisation
+
+
+## Get the Data from Github
+
+```{r}
+spotify_songs <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-01-21/spotify_songs.csv')
+```
+
+## Get Data from Spotify API
+
+```{r}
+# System settings
+Sys.setenv(SPOTIFY_CLIENT_ID = '<SPOTIFY_CLIENT_ID>')
+Sys.setenv(SPOTIFY_CLIENT_SECRET = '<SPOTIFY_CLIENT_SECRET>')
+
+access_token <- get_spotify_access_token()
+```
+
+> What Was the Beatles’ Favorite Key?
+
+```{r}
+beatles <- get_artist_audio_features('the beatles')
+
+beatles %>% 
+  count(key_mode, sort = TRUE) %>% 
+  head(5) %>% 
+  kable()
+```
+
+
+> Get your most recently played tracks
+
+```{r}
+
+#> Warning: package 'lubridate' was built under R version 4.1.1
+
+get_my_recently_played(limit = 5) %>% 
+  mutate(
+    artist.name = map_chr(track.artists, function(x) x$name[1]),
+    played_at = as_datetime(played_at)
+  ) %>% 
+  select(
+    all_of(c("track.name", "artist.name", "track.album.name", "played_at"))
+  ) %>% 
+  kable()
+```
+
+
