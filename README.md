@@ -34,10 +34,11 @@ https://datacatalog.worldbank.org/search/dataset/0037651/Environment--Social-and
 ## Questions to answer
 
 Analyse World Data on ESG
-Identify 2 Stories of Environmental Factors in the world
-Identify 2 Stories of Social factors in the world
-Identify 2 stories of Governance factors in the world
-Summarize findings
+
+- Identify 2 Stories of Environmental Factors in the world
+- Identify 2 Stories of Social factors in the world
+- Identify 2 stories of Governance factors in the world
+- Summarize findings
 
 ## Statistical Techniques 
 
