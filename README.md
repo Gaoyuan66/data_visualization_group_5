@@ -33,11 +33,11 @@ https://datacatalog.worldbank.org/search/dataset/0037651/Environment--Social-and
 
 ## Questions to answer
 
-We want to analyse the most popular songs, the different genres, what makes a song popular and other things. Ideally we will use our own data in combination with the dataset and analyse our listening patterns. 
-* What trends are we seeing on popularity of song genre, popularity, and release date 
-* What songs and genres are more similar to each other than others? 
-* What features of a song (ex: tempo, valence, etc.) can explain their popularity at a greater degree?
-* Discover commonalities on modes, song types, and artist 
+Analyse World Data on ESG
+Identify 2 Stories of Environmental Factors in the world
+Identify 2 Stories of Social factors in the world
+Identify 2 stories of Governance factors in the world
+Summarize findings
 
 ## Statistical Techniques 
 
