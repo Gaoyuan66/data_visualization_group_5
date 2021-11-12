@@ -1,0 +1,60 @@
+---
+title: "Load_Data"
+author: "Group 5"
+date: "11/12/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+
+
+```{r load-packages, echo=FALSE}
+library(tidyverse)
+library(extrafont)
+library(mosaic)
+library(vroom)
+library(ggtext)
+library(gapminder)
+library(ggrepel)
+library(patchwork)
+library(gghighlight)
+library(skimr)
+library(sf)
+library(lubridate)
+
+loadfonts(device="pdf")
+# loadfonts(device="pdf") if you have a mac
+```
+
+```{r esg}
+
+
+esg_data_raw <- read_csv(here::here("data/ESG_csv","ESGData.csv"))
+
+glimpse(esg_data_raw)
+skimr::skim(esg_data_raw)
+ncol(esg_data_raw) #67 (col 66 is year 2050 and col 67 is a variable with no information names X67)
+#cols 5-65 contain yearly data from 1960-2020
+#most indicators have missing data for certainyears. 
+
+esg_data <- esg_data_raw %>% pivot_longer(cols=5:65, names_to = "Year") %>% select(-`2050`,-`X67`)
+
+## ALL OF THIS IS NOT SUPER USEFUL FOR ANALYIS (but still look)
+# Information on sources of different country series
+# esg_countryseries <- read_csv(here::here("data/ESG_csv","ESGCountry-Series.csv"))
+
+#Information on country statistics and methodology
+# esg_country <- read_csv(here::here("data/ESG_csv","ESGCountry.csv"))
+
+ #Shows sources of data
+# esg_footnote <- read_csv(here::here("data/ESG_csv","ESGFootNote.csv"))
+
+#Explain meaning of different features related to time series
+# esg_series_time <- read_csv(here::here("data/ESG_csv","ESGSeries-Time.csv"))
+# esg_series <- read_csv(here::here("data/ESG_csv","ESGSeries.csv"))
+
+```   
+
