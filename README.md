@@ -1,66 +1,49 @@
-# Spotify Data Analytics and Visualisation
+# ESG Data Analysis and Visualization
 
 ## Backgroud
 
-*What is Spotify? How is the market share? etc.*
+*Environmental Social and Governance (ESG) Data*
 
 
+*Environment:*
 
+- This category encompasses key themes, which provide a picture of the sustainability of a country’s economic performance given its natural resource endowment, management and supplementation and its risk or resilience to climate change and other natural hazards. This category pays particular attention to the internalization of environmental externalities created by economic activity. This category also accounts for sustainable energy access and food security, crucial factors for stable long-term economic growth.
+
+*Social:*
+
+- This category encompasses key themes, which provide a picture of the sustainability of a country’s economic performance given its efficacy meeting the basic needs of its population and reducing poverty, management of social and equity issues and investment in human capital and productivity. This category also includes demographic criteria, pertinent to stable long-term economic growth.
+
+*Governance:*
+
+- This category encompasses key themes, which provide a picture of the sustainability of a country’s economic performance given its institutional capacity to support long-term stability, growth and poverty reduction. This category also accounts for the strength of a country’s political, financial and legal systems and capacity to address environmental and social risks.
+
+(Copied from World bank, change before submitting)
 
 ## Data Source
 
 ### Open Dataset
 
-Dataset: Spotify Songs
-https://github.com/rfordatascience/tidytuesday/tree/master/data/2020/2020-01-21
-
-```R
-spotify_songs <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-01-21/spotify_songs.csv')
-```
+Dataset: Worldbank ESG Dataset
+https://datacatalog.worldbank.org/search/dataset/0037651/Environment--Social-and-Governance-Data
 
 
 
-### Spotify API
-
-We will also be downloading our own spotify data by using `spotifyr` package to get data on demand.
-
-> Sample queries
-
-First register on Spotify as a developer.
-
-⬇️ What was the Beatles' favorite key?
-
-```R
-# install.packages("spotifyr")
-library(spotifyr)
-# System settings
-Sys.setenv(SPOTIFY_CLIENT_ID = '96d8c2cea37c435ea73b9866b72a00d7')
-Sys.setenv(SPOTIFY_CLIENT_SECRET = 'f93a0e7682bb431e9cbf31f08d5fe069')
-
-access_token <- get_spotify_access_token()
-beatles <- get_artist_audio_features('the beatles')
-
-beatles %>% 
-  count(key_mode, sort = TRUE) %>% 
-  head(5) %>% 
-  kable()
-```
 
 
 
 ## Questions to answer
 
-We want to analyse the most popular songs, the different genres, what makes a song popular and other things. Ideally we will use our own data in combination with the dataset and analyse our listening patterns. 
-* What trends are we seeing on popularity of song genre, popularity, and release date 
-* What songs and genres are more similar to each other than others? 
-* What features of a song (ex: tempo, valence, etc.) can explain their popularity at a greater degree?
-* Discover commonalities on modes, song types, and artist 
+Analyse World Data on ESG
+
+- Identify 2 Stories of Environmental Factors in the world
+- Identify 2 Stories of Social factors in the world
+- Identify 2 stories of Governance factors in the world
+- Summarize findings
 
 ## Statistical Techniques 
 
 * Regression Analyses 
-* Similarity Analysis 
-* Item-Based Cluster Analysis 
+* Potential Cluster Analysis 
 * General Data Exploration (Avg, Count, Max, Min, Mean, Median) 
 
 
@@ -68,9 +51,8 @@ We want to analyse the most popular songs, the different genres, what makes a so
 
 ## To-do list
 
-- [ ] Fill the Background
-- [ ] Fill the Sample query in R (and register a API key)
-- [ ] Fill the questions to answer
+- Come up with 2 stories for each section of ESG
+- Create visualizations that accurately illustrate the stories
 
 
 
@@ -83,10 +65,6 @@ We want to analyse the most popular songs, the different genres, what makes a so
 ## References
 
 
-> NOTE: 
-
-As a back-up, we have chosen:
-https://databank.worldbank.org/source/environment-social-and-governance?preview=on#
 
 
 
