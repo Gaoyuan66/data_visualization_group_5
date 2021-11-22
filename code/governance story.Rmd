@@ -35,6 +35,12 @@ loadfonts(device="pdf")
 
 esg_data_raw <- read_csv(here::here("data/ESG_csv","ESGData.csv"))
 
+library(countrycode)
+esg_data_final$continent = countrycode(sourcevar = esg_data_final$country_name,origin = "country.name",destination = "continent")
+
+esg_data_final %>% filter(is.na(continent)) %>%  select(country_name) %>% unique()
+
+
 glimpse(esg_data_raw)
 skimr::skim(esg_data_raw)
 ncol(esg_data_raw) #67 (col 66 is year 2050 and col 67 is a variable with no information names X67)
@@ -67,7 +73,7 @@ esg_data <- esg_data_raw %>% pivot_longer(cols=5:65, names_to = "Year") %>% sele
 
 
 #here we create the wide useable data with each variable as its own column
-esg_data_final <- esg_data  %>% select(-indicator_code) %>% group_by(indicator_name) %>% pivot_wider(names_from = indicator_name, values_from = value)
+esg_data_final <- esg_data  %>% select(-indicator_code) %>% group_by(indicator_name) %>% pivot_wider(names_from = indicator_name, values_from = value) %>% janitor::clean_names()
 
 #Writes to data folder
 write.csv(esg_data_final, here::here("data","esg_data_final.csv"))
@@ -76,7 +82,7 @@ skim(esg_data_final)
 
 esg_data_final$year <- as.integer(esg_data_final$year)
 
-esg_data_final %>% count(country_name) %>% mutate(perc = round(100*n/sum(n),2))
+esg_data_final %>% count(continent) %>% mutate(perc = round(100*n/sum(n),2))
 
 esg_data_final %>% count(year) %>% mutate(perc = round(100*n/sum(n),2))
   
@@ -90,20 +96,61 @@ Governance is how well a country/region can sustain its long term stability, gro
 ```{r}
 # install.packages("gganimate")
 library(gganimate)
+esg_data_final$individuals_using_the_internet_percent_of_population
+esg_data_final$control_of_corruption_estimate
 
+animation_selection <- esg_data_final %>% filter(country_name %in% c("China","United Kingdom","India","United States","South Africa"),
+                          year >1999)
 
-animation1 <- ggplot(data = esg_data_final,
-       mapping = aes(x = `Individuals using the Internet (% of population)`,
-                     y = `Energy use (kg of oil equivalent per capita)`,
-                     colour = country_name,)) +
+animation1 <- ggplot(data = animation_selection,
+       mapping = aes(x = individuals_using_the_internet_percent_of_population,
+                     y = control_of_corruption_estimate,
+                     colour = continent,)) +
   geom_point(alpha = 0.5) +
   theme_bw() +
   theme(legend.position="none") +
   labs(title = "Year: {frame_time}", 
        x = "Internet Usage", 
-       y = "Energy use") +    
+       y = "Corruption Estimate") +    
   transition_time(year)+
   ease_aes("linear")
 
 animate(animation1, height=600, width = 600)
 ```
+
+```{r}
+esg_data_final %>% 
+  group_by(country_name) %>% 
+  summarize( mean_)
+
+#innovation
+
+innovation <-esg_data_final %>% select(country_name, year, patent_applications_residents, research_and_development_expenditure_percent_of_gdp,scientific_and_technical_journal_articles, continent) %>% 
+  group_by(continent) %>% 
+  summarize(mean_patent = round(mean(patent_applications_residents, na.rm=TRUE),2),
+            max_patent = max(patent_applications_residents, na.rm=TRUE),
+            min_patent = min(patent_applications_residents, na.rm=TRUE))
+
+
+
+corr(esg_data_final$individuals_using_the_internet_percent_of_population)
+
+innovation %>% ggplot() +
+  geom_col(aes(x=continent, y=mean_patent))
+```
+
+```{r}
+library("GGally")
+
+esg_data_final$voice_and_accountability_estimate
+governance <- c(country_name, year, individuals_using_the_internet_percent_of_population,gdp_growth_annual_percent )
+
+esg_data_final %>% 
+  select(country_name, year,
+         gdp_growth_annual_percent,ease_of_doing_business_rank_1_most_business_friendly_regulations,
+         government_effectiveness_estimate, patent_applications_residents, political_stability_and_absence_of_violence_terrorism_estimate, school_enrollment_primary_percent_gross, strength_of_legal_rights_index_0_weak_to_12_strong, voice_and_accountability_estimate, individuals_using_the_internet_percent_of_population) %>% #keep Y variable last
+  ggcorr(method = c("pairwise", "pearson"), layout.exp = 3,label_round=2, label = TRUE,label_size = 2,hjust = 1)
+
+
+```
+
