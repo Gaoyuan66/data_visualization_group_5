@@ -1,0 +1,109 @@
+---
+title: "Governance Story"
+author: "Alex Kubbinga"
+date: "11/22/2021"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+
+
+```{r load-packages, echo=FALSE}
+library(tidyverse)
+library(extrafont)
+library(mosaic)
+library(vroom)
+library(ggtext)
+library(gapminder)
+library(ggrepel)
+library(patchwork)
+library(gghighlight)
+library(skimr)
+library(sf)
+library(lubridate)
+
+loadfonts(device="pdf")
+# loadfonts(device="pdf") if you have a mac
+```
+
+```{r esg}
+
+
+esg_data_raw <- read_csv(here::here("data/ESG_csv","ESGData.csv"))
+
+glimpse(esg_data_raw)
+skimr::skim(esg_data_raw)
+ncol(esg_data_raw) #67 (col 66 is year 2050 and col 67 is a variable with no information names X67)
+#cols 5-65 contain yearly data from 1960-2020
+#most indicators have missing data for certainyears. 
+
+#long data 
+esg_data <- esg_data_raw %>% pivot_longer(cols=5:65, names_to = "Year") %>% select(-`2050`,-`X67`) %>% janitor::clean_names()
+
+
+## ALL OF THIS IS NOT SUPER USEFUL FOR ANALYIS (but still look)
+# Information on sources of different country series
+# esg_countryseries <- read_csv(here::here("data/ESG_csv","ESGCountry-Series.csv"))
+
+#Information on country statistics and methodology
+# esg_country <- read_csv(here::here("data/ESG_csv","ESGCountry.csv"))
+
+ #Shows sources of data
+# esg_footnote <- read_csv(here::here("data/ESG_csv","ESGFootNote.csv"))
+
+#Explain meaning of different features related to time series
+# esg_series_time <- read_csv(here::here("data/ESG_csv","ESGSeries-Time.csv"))
+# esg_series <- read_csv(here::here("data/ESG_csv","ESGSeries.csv"))
+
+```   
+
+
+```{r}
+
+
+
+#here we create the wide useable data with each variable as its own column
+esg_data_final <- esg_data  %>% select(-indicator_code) %>% group_by(indicator_name) %>% pivot_wider(names_from = indicator_name, values_from = value)
+
+#Writes to data folder
+write.csv(esg_data_final, here::here("data","esg_data_final.csv"))
+
+skim(esg_data_final)
+
+esg_data_final$year <- as.integer(esg_data_final$year)
+
+esg_data_final %>% count(country_name) %>% mutate(perc = round(100*n/sum(n),2))
+
+esg_data_final %>% count(year) %>% mutate(perc = round(100*n/sum(n),2))
+  
+```
+
+# Governance Story
+
+Governance is how well a country/region can sustain its long term stability, growth and poverty reduction given its institutional capacity. It shows the strength of political, financial, legal systems and the capcity to address environmental & social risks. Governance is essentially an indicator of how well positioned a country is to improve (socially, environmentally and economically). How well is the country managed for growth.
+
+
+```{r}
+# install.packages("gganimate")
+library(gganimate)
+
+
+animation1 <- ggplot(data = esg_data_final,
+       mapping = aes(x = `Individuals using the Internet (% of population)`,
+                     y = `Energy use (kg of oil equivalent per capita)`,
+                     colour = country_name,)) +
+  geom_point(alpha = 0.5) +
+  theme_bw() +
+  theme(legend.position="none") +
+  labs(title = "Year: {frame_time}", 
+       x = "Internet Usage", 
+       y = "Energy use") +    
+  transition_time(year)+
+  ease_aes("linear")
+
+animate(animation1, height=600, width = 600)
+```
