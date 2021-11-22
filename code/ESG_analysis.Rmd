@@ -40,7 +40,9 @@ ncol(esg_data_raw) #67 (col 66 is year 2050 and col 67 is a variable with no inf
 #cols 5-65 contain yearly data from 1960-2020
 #most indicators have missing data for certainyears. 
 
-esg_data <- esg_data_raw %>% pivot_longer(cols=5:65, names_to = "Year") %>% select(-`2050`,-`X67`)
+#long data 
+esg_data <- esg_data_raw %>% pivot_longer(cols=5:65, names_to = "Year") %>% select(-`2050`,-`X67`) %>% janitor::clean_names()
+
 
 ## ALL OF THIS IS NOT SUPER USEFUL FOR ANALYIS (but still look)
 # Information on sources of different country series
@@ -57,4 +59,21 @@ esg_data <- esg_data_raw %>% pivot_longer(cols=5:65, names_to = "Year") %>% sele
 # esg_series <- read_csv(here::here("data/ESG_csv","ESGSeries.csv"))
 
 ```   
+
+```{r}
+
+
+
+#here we create the wide useable data with each variable as its own column
+esg_data_final <- esg_data  %>% select(-indicator_code) %>% group_by(indicator_name) %>% pivot_wider(names_from = indicator_name, values_from = value)
+
+
+skim(esg_data_final)
+
+esg_data_final %>% count(country_name) %>% mutate(perc = round(100*n/sum(n),2))
+
+esg_data_final %>% count(year) %>% mutate(perc = round(100*n/sum(n),2))
+  
+```
+
 
