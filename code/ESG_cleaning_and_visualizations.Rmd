@@ -522,6 +522,7 @@ one/two
 ```
 
 ## Visualizations for Migration & Political Stability
+*Below is the code for slide 8*
 
 ```{r, clean governance data, echo=TRUE}
 gov_data_final <- esg_data_final %>% select(country_name, country_code, year, net_migration, political_stability_and_absence_of_violence_terrorism_estimate) %>% 
@@ -533,22 +534,53 @@ gov_data_final <- esg_data_final %>% select(country_name, country_code, year, ne
 ```
 
 
-``` {r, echo=TRUE}
-p1 <- gov_data_final  %>% ggplot(aes(x=year,y=net_migration,color=country_name) , format(y, scientific = FALSE))+
-  geom_line()+
-  #facet_wrap(~country_name) +
-  theme(legend.position = "bottom") +
-  theme_minimal()
 
-p1
-
-```
 
 ```{r}
+net_migration <- gov_data_final %>% ggplot(aes(x=year,y=net_migration,color=country_name) , format(y, scientific = FALSE))+
+  geom_line(size=0.5,show.legend = FALSE)+
+  scale_colour_manual(values = c("India" = "#D0BC52","China"="#FF6C67","Spain" = "#36D6D9","South Africa"= "#3CD175","United Kingdom"= "#8CBDFF","United States"= "#FF90F1"))+
+  labs(title = "Western countries have positive net migration over the years", 
+       subtitle = "Net migration in the country measured by million people",
+       x="Year",
+       y="Net migration in million",
+       size=13)+
+  geom_text(
+    data = data.frame(x = rep(2017.5,6), y = c(-2.6,-1.8,0.2,0.8,1.2,4.8), 
+                      label = c("India","China","Spain","South Africa","United Kingdom","United States")),
+    aes(x = x, y = y, label = label, fontface = 4),
+    colour=c("#D0BC52","#FF6C67","#36D6D9","#3CD175","#8CBDFF","#FF90F1"),
+    family="Arial",
+    hjust = 0,
+    lineheight = .3,
+    size = 3,
+    inherit.aes = FALSE,
+  ) +
+  geom_text(
+    aes(x = 2019, y = -0.2, label = "World", fontface = 4),
+    colour="gray70",
+    family="Arial",
+    hjust = 0,
+    lineheight = .3,
+    size = 4,
+    inherit.aes = FALSE,
+  ) +
+    theme(legend.position = "none",
+        panel.grid.minor.x = element_blank(),
+        panel.grid.minor.y = element_line(colour = "grey"),
+        panel.background=element_blank(),
+        axis.line = element_line(colour = "grey"),
+        plot.background=element_blank())+
+  geom_hline(yintercept=0, linetype="dashed", color="gray60", size=1)+
+  xlim(2002,2020)+
+  annotate("rect",xmin=-Inf,xmax=Inf,ymin=0, ymax=Inf, fill="skyblue2",alpha=0.1)+
+  annotate("rect",xmin=-Inf,xmax=Inf,ymin=-Inf, ymax=0, fill="gray90",alpha=0.5)
+
+net_migration
 
 
-#Calculating the AVERAGE mig for the countries
-
+```
+```{r, average migration}
 gov_averages <- gov_data_final %>% 
               group_by(country_name) %>%   
                 mutate ( total_mig = sum(net_migration) ) %>% 
@@ -562,87 +594,26 @@ gov_averages <- gov_averages %>%
                   filter( year %in% c("2017" ) ) %>% 
                   select ( country_name , year, avg_across_migration, avg_across_political_stability )
 
-
-```
-
-
-
-
-```{r include=FALSE}
-ggplot(gov_averages, x= country_name, aes(avg_across_migration , avg_across_political_stability, total, fill = country_name)) + 
-geom_bar(stat="identity", position="dodge", color="black") 
-
-```
-
-
-```{r}
-
-
 gov_averages %>% 
-  ggplot(aes(y = avg_across_migration, x = fct_reorder(country_name, -avg_across_migration))) +
- #geom_line( aes( x = fct_reorder(country_name, -avg_across_migration) , y = avg_across_political_stability)) +
-  scale_fill_brewer(palette = "Blues")+
-  geom_col() +
-  labs(
-    title = "Are people migrating to the most politically stable countries?",
-    subtitle = "Political stability and migration rates per country",
-    x = "Country",
-    y = "Migration & Stability"
-  ) +  theme_minimal() 
-
-```
-
-
-
-
-
-
-```{r}
-
-
-migration_plot <-  ggplot()+
-  geom_line(data=gov_data_final,aes(x=year,y=net_migration,color=country_name),
-            size=0.5,
-            show.legend = TRUE)  +
-    labs(title = "Highest migration seen in the western countries", 
-       subtitle = "Net migration in countries over time",
-       x="Year",
-       y="Migration Per Million",
+  ggplot(aes(y = avg_across_migration, 
+             x = fct_reorder(country_name, -avg_across_migration), fill=country_name)) +
+  geom_col()+
+  scale_colour_manual(values = c("India" = "#D0BC52","China"="#FF6C67","Spain" = "#36D6D9","South Africa"= "#3CD175","United Kingdom"= "#8CBDFF","United States"= "#FF90F1"))+
+labs(title = "Political stability is higher for countries with net positive migration", 
+     subtitle = "Average 10 year estimate political stability and absence of violence/terrorism from 2002-2012",
+       x="Country",
+       y="Average Political stability estimate",
        size=13)+
-  scale_colour_manual(values = c("India" = "#D0BC52","China" = "#FF6C67","Spain" = "#36D6D9","South Africa"= "#3CD175","United Kingdom"= "#8CBDFF","United States"= "#FF90F1"))+
-   theme(legend.position = "bottom",
+        theme(legend.position = "none",
         panel.grid.minor.x = element_blank(),
-        panel.grid.minor.y = element_blank(),
+        panel.grid.minor.y = element_line(colour = "grey"),
         panel.background=element_blank(),
         axis.line = element_line(colour = "grey"),
-        plot.background=element_blank()) + scale_fill_manual("legend_title")
-  NULL
-
-
-
-stability_plot <-  ggplot()+
-  geom_line(data=gov_data_final,aes(x=year,y=political_stability_and_absence_of_violence_terrorism_estimate
-,color=country_name),
-            size=0.5,
-            show.legend = TRUE)  +
-    labs(title = "US, UK & Spain have been stable over years", 
-       subtitle = "Net stability in countries over time",
-       x="Year",
-       y="Political Stability",
-       size=13)+
-  scale_colour_manual(values = c("India" = "#D0BC52","China" = "#FF6C67","Spain" = "#36D6D9","South Africa"= "#3CD175","United Kingdom"= "#8CBDFF","United States"= "#FF90F1"))+
-   theme(legend.position = "bottom",
-        panel.grid.minor.x = element_blank(),
-        panel.grid.minor.y = element_blank(),
-        panel.background=element_blank(),
-        axis.line = element_line(colour = "grey"),
-        plot.background=element_blank()) +
-  NULL
-
-grid.arrange(migration_plot,stability_plot,ncol=2)
+        plot.background=element_blank())+
+  annotate("rect",xmin=-Inf,xmax="South Africa",ymin=-Inf, ymax=Inf, fill="skyblue2",alpha=0.1)+
+  annotate("rect",xmin="South Africa",xmax=Inf,ymin=-Inf, ymax=Inf, fill="gray90",alpha=0.5)+
+    geom_hline(yintercept=0, linetype="dashed", color="gray60", size=1)
+  
 
 ```
-
-
-
 
