@@ -1,26 +1,19 @@
 # ESG Data Cleaning and Visualization
 
 
-*Environmental Social and Governance (ESG) World Bank Data*
+**Environmental Social and Governance (ESG) World Bank Data**
 
 4. Edit the readme.md file to be a short, one-page description of what your final project is about. 
 Add the data sources and question/issue you want to address 
 
 Environmental, Social and Governance data is becoming more popular and important in our society today. For this reason we wanted to investigate how our own countries and how the world is performing in different ESG criterion. In addition, we also wanted to investigate how different ESG metrics interact with each other. We wanted to tell a story that highlights the differences between our countries and then investigate the interesting trends and relationships we find in the ESG metrics.
 
-Our countries are:
-- Spain
-- South Africa
-- China
-- United Kingdom
-- United States
-- India
 
-*Questions:*
+**Questions:**
 1. How are our countries performing in different ESG metrics?
 2. How are different ESG metrics related?
 
-*Summary*
+**Summary**
 Our story starts by examining GDP per capita in all countries to see the differences in economic development. After seeing an overview of the world, we dig deeper into our own countries GDP per capita and how that has evolved over time.
 
 
@@ -50,10 +43,10 @@ Additional datasets include:
 * Potential Cluster Analysis 
 * Descriptive Statistics
 
-
-
-
-
-
-
-
+**Our countries are:**
+- Spain
+- South Africa
+- China
+- United Kingdom
+- United States
+- India
