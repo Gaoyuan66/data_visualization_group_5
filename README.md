@@ -15,6 +15,14 @@ Environmental, Social and Governance data is becoming more popular and important
 
 **Summary**
 Our story starts by examining GDP per capita in all countries to see the differences in economic development. After seeing an overview of the world, we dig deeper into our own countries GDP per capita and how that has evolved over time.
+The US is high in both GDP and CO2 emissions per capita, indicating a high ratio for second industry and environmental nonfriendly businesses.
+India is densely populated with the lowest GDP per capita and CO2 emissions per capita in the 6 countries. They may focus more on agriculture and service industries.
+
+
+Social:
+The world average unemployment rate and female to male ratio are both quite stable for recent decades. 
+The proportions of female in workplace of China and India are both deteriorating (0.8:1 and 0.27:1, respectively), while others are ameliorating.
+The unemployment rate of South Africa keeps increasing for recent years, while that of UK has been decreasing for 10 years.
 
 
 ## ESG overview
