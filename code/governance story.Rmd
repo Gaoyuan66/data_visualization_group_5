@@ -196,7 +196,7 @@ one<-our_data %>% filter(government_effectiveness_estimate != "NA") %>% ggplot(a
   scale_y_continuous(breaks=c(0,1,2)) +
    geom_text(
     data = data.frame(x = c(2019,2012,2018.5,2018,2016,2013), y = c(.5,.5,.75,1.15,1.7,1.4), label = c("India","South Africa","China","Spain","United Kingdom","United States")),
-    aes(x = x, y = y, label = label),
+    aes(x = x, y = y, label = label, fontface=4),
     colour=c("#D0BC52","#3CD175","#FF6C67","#36D6D9","#8CBDFF","#FF90F1"),
     family="Arial",
     hjust = 0,
@@ -237,7 +237,7 @@ one<-our_data %>% filter(government_effectiveness_estimate != "NA") %>% ggplot(a
           axis.title=element_text(size=12)) +
    geom_text(
     data = data.frame(x = c(2018.5,2016,2018.5,2018,2017,2016), y = c(-.5,.4,-.4,1,1.8,1.5), label = c("India","South Africa","China","Spain","United Kingdom","United States")),
-    aes(x = x, y = y, label = label),
+    aes(x = x, y = y, label = label, fontface=4),
     colour=c("#D0BC52","#3CD175","#FF6C67","#36D6D9","#8CBDFF","#FF90F1"),
     family="Arial",
     hjust = 0,
