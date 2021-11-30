@@ -1,68 +1,57 @@
-# ESG Data Analysis and Visualization
-
-## Backgroud
-
-*Environmental Social and Governance (ESG) Data*
+# ESG Data Cleaning and Visualization
 
 
-*Environment:*
+*Environmental Social and Governance (ESG) World Bank Data*
 
-- This category encompasses key themes, which provide a picture of the sustainability of a country’s economic performance given its natural resource endowment, management and supplementation and its risk or resilience to climate change and other natural hazards. This category pays particular attention to the internalization of environmental externalities created by economic activity. This category also accounts for sustainable energy access and food security, crucial factors for stable long-term economic growth.
+4. Edit the readme.md file to be a short, one-page description of what your final project is about. 
+Add the data sources and question/issue you want to address 
 
-*Social:*
+Environmental, Social and Governance data is becoming more popular and important in our society today. For this reason we wanted to investigate how our own countries and how the world is performing in different ESG criterion. In addition, we also wanted to investigate how different ESG metrics interact with each other. We wanted to tell a story that highlights the differences between our countries and then investigate the interesting trends and relationships we find in the ESG metrics.
 
-- This category encompasses key themes, which provide a picture of the sustainability of a country’s economic performance given its efficacy meeting the basic needs of its population and reducing poverty, management of social and equity issues and investment in human capital and productivity. This category also includes demographic criteria, pertinent to stable long-term economic growth.
+Our countries are:
+- Spain
+- South Africa
+- China
+- United Kingdom
+- United States
+- India
 
-*Governance:*
+*Questions:*
+1. How are our countries performing in different ESG metrics?
+2. How are different ESG metrics related?
 
-- This category encompasses key themes, which provide a picture of the sustainability of a country’s economic performance given its institutional capacity to support long-term stability, growth and poverty reduction. This category also accounts for the strength of a country’s political, financial and legal systems and capacity to address environmental and social risks.
-
-(Copied from World bank, change before submitting)
-
-## Data Source
-
-### Open Dataset
-
-Dataset: Worldbank ESG Dataset
-https://datacatalog.worldbank.org/search/dataset/0037651/Environment--Social-and-Governance-Data
-
-
-
+*Summary*
+Our story starts by examining GDP per capita in all countries to see the differences in economic development. After seeing an overview of the world, we dig deeper into our own countries GDP per capita and how that has evolved over time.
 
 
+## ESG overview
 
-## Questions to answer
+Environmental data provides a picture of a country's response to climate change and other natural hazards and includes variables such as Co2 emmissions per capita, Renewable electricity output percentage and GHG emission breakdowns. 
 
-Analyse World Data on ESG
+Social data shows how a country is meeting the needs of its population and how it is performing in addressing various social issues. It includes variables such as school enrollment, gender parity in the labor force and unemployment percentage.
 
-- Identify 2 Stories of Environmental Factors in the world
-- Identify 2 Stories of Social factors in the world
-- Identify 2 stories of Governance factors in the world
-- Summarize findings
+Governance data shows how well a country is positioned to ensure long term stability and future growth. It includes variables such as political stability, government effectiveness and regulatory quality.
+
+
+
+## Data Sources:
+
+The main data set used was the [World Bank ESG Dataset](https://datacatalog.worldbank.org/search/dataset/0037651)
+
+Additional datasets include:
+[World GDP](https://data.worldbank.org/indicator/NY.GDP.MKTP.CD?end=2020&start=1990)
+[UK Greenhouse Gas Emissions](https://www.ons.gov.uk/economy/environmentalaccounts/bulletins/ukenvironmentalaccounts/2021)
+
 
 ## Statistical Techniques 
 
 * Regression Analyses 
+* Correlation
 * Potential Cluster Analysis 
-* General Data Exploration (Avg, Count, Max, Min, Mean, Median) 
+* Descriptive Statistics
 
 
 
-
-## To-do list
-
-- Come up with 2 stories for each section of ESG
-- Create visualizations that accurately illustrate the stories
-
-
-
-## Storyline
-
-
-
-
-
-## References
 
 
 
