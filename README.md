@@ -8,13 +8,6 @@ Add the data sources and question/issue you want to address
 
 Environmental, Social and Governance data is becoming more popular and important in our society today. For this reason we wanted to investigate how our own countries and how the world is performing in different ESG criterion. In addition, we also wanted to investigate how different ESG metrics interact with each other. We wanted to tell a story that highlights the differences between our countries and then investigate the interesting trends and relationships we find in the ESG metrics.
 
-Our countries are:
-- Spain
-- South Africa
-- China
-- United Kingdom
-- United States
-- India
 
 *Questions:*
 1. How are our countries performing in different ESG metrics?
@@ -50,10 +43,10 @@ Additional datasets include:
 * Potential Cluster Analysis 
 * Descriptive Statistics
 
-
-
-
-
-
-
-
+*Our countries are:*
+- Spain
+- South Africa
+- China
+- United Kingdom
+- United States
+- India
