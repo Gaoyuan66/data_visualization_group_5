@@ -1,70 +1,58 @@
-# ESG Data Analysis and Visualization
-
-## Backgroud
-
-*Environmental Social and Governance (ESG) Data*
+# ESG Data Cleaning and Visualization
 
 
-*Environment:*
+**Environmental Social and Governance (ESG) World Bank Data**
 
-- This category encompasses key themes, which provide a picture of the sustainability of a country’s economic performance given its natural resource endowment, management and supplementation and its risk or resilience to climate change and other natural hazards. This category pays particular attention to the internalization of environmental externalities created by economic activity. This category also accounts for sustainable energy access and food security, crucial factors for stable long-term economic growth.
 
-*Social:*
+Environmental, Social and Governance data is becoming more popular and important in our society today. For this reason we wanted to investigate how our own countries and how the world is performing in different ESG criterion. In addition, we also wanted to investigate how different ESG metrics interact with each other. We wanted to tell a story that highlights the differences between our countries and then investigate the interesting trends and relationships we find in the ESG metrics.
 
-- This category encompasses key themes, which provide a picture of the sustainability of a country’s economic performance given its efficacy meeting the basic needs of its population and reducing poverty, management of social and equity issues and investment in human capital and productivity. This category also includes demographic criteria, pertinent to stable long-term economic growth.
 
-*Governance:*
+**Questions:**
+1. How are our countries performing in different ESG metrics?
+2. How are different ESG metrics related?
 
-- This category encompasses key themes, which provide a picture of the sustainability of a country’s economic performance given its institutional capacity to support long-term stability, growth and poverty reduction. This category also accounts for the strength of a country’s political, financial and legal systems and capacity to address environmental and social risks.
+**Summary**
 
-(Copied from World bank, change before submitting)
+Our story starts by examining GDP per capita in all countries to see the differences in economic development. After seeing an overview of the world, we dig deeper into our own countries GDP per capita and how that has evolved over time. In addition, we also look at population density in our countries and CO2 emissions per capita. We see that the US is high in both GDP and CO2 emissions per capita, indicating that their economic growth has come with high emissions and a lack of environmental friendly business policies. India, on the other hand, is densely populated with the lowest GDP per capita and CO2 emissions per capita in the 6 countries. This may be due to the fact that the Indian economy focuses more on agriculture and service industries.
 
-## Data Source
+From an environmental perspective we found that some of our countries have been increasing their investments in renewable energy with renewable energy contributing a higher percentage to their total energy output. India, the US, and South Africa's renewable energy output percentage remains relatively unchanged. This means they haven't been prioritising renewable energy investments compared to other sources of energy as its overall percentage hasn't changed. The UK and Spain have seen huge increases in percentage output with renewable energy making up around 25% and 35% respectively. With this, the UK has seen Greenhouse gas emissions decline steadily over the years with more energy coming from renewables.
 
-### Open Dataset
 
-Dataset: Worldbank ESG Dataset
-https://datacatalog.worldbank.org/search/dataset/0037651/Environment--Social-and-Governance-Data
+Next we look into the social data throughout the world and in our countries. The average world unemployment rate and female to male labor participation ratio are both quite stable for recent decades at 5.37% and ~66% respectively. Interestingly, the proportions of females in workplace in China and India are both deteriorating at 0.8:1 and 0.27:1, respectively. Spain, US, UK, and South Africa have been increasing the female:male labor participation rate. Gender parity in primary school enrollment has reached approximately 1 in 2020 for all of our countries. India and China have seen the highest increases from around 0.6 and 0.8 in 1980. Other intriguing observations include that the unemployment rate of South Africa (28.4%) has been increasing in recent years, suggesting issues of governance in the country. 
+
+With that in mind, we next decided to investigate governance data. We found that the effectiveness of a government and the regulatory quality to promote private sector development are almost perfectly correlated across the globe and over time with a correlation of 0.93. Next we looked at the values and trends of government effectiveness and regulatory quality in our countries. We found that both followed similar trends due to their correlation (i.e if govt. effectiveness increased so did regulatory quality). It was also found that South Africa's government effectiveness has been declining since 1995 potentially showing a relationship with the continuoulsy high levels of unemployment. Lastly we looked at net migration trends and found that western countries (US, UK) have high and positive immigration statistics. India and China, however, have negative net migration with more citizens leaving. This could potentially be related to political stability with the US and the UK having the highest values and China and India having the lowest.
 
 
 
+## ESG overview
+
+Environmental data provides a picture of a country's response to climate change and other natural hazards and includes variables such as Co2 emmissions per capita, Renewable electricity output percentage and GHG emission breakdowns. 
+
+Social data shows how a country is meeting the needs of its population and how it is performing in addressing various social issues. It includes variables such as school enrollment, gender parity in the labor force and unemployment percentage.
+
+Governance data shows how well a country is positioned to ensure long term stability and future growth. It includes variables such as political stability, government effectiveness and regulatory quality.
 
 
 
-## Questions to answer
+## Data Sources:
 
-Analyse World Data on ESG
+The main data set used was the [World Bank ESG Dataset](https://datacatalog.worldbank.org/search/dataset/0037651)
 
-- Identify 2 Stories of Environmental Factors in the world
-- Identify 2 Stories of Social factors in the world
-- Identify 2 stories of Governance factors in the world
-- Summarize findings
+Additional datasets include:
+[World GDP](https://data.worldbank.org/indicator/NY.GDP.MKTP.CD?end=2020&start=1990)
+[UK Greenhouse Gas Emissions](https://www.ons.gov.uk/economy/environmentalaccounts/bulletins/ukenvironmentalaccounts/2021)
+
 
 ## Statistical Techniques 
 
-* Regression Analyses 
-* Potential Cluster Analysis 
-* General Data Exploration (Avg, Count, Max, Min, Mean, Median) 
+* Regression 
+* Correlation
+* Descriptive Statistics
 
-
-
-
-## To-do list
-
-- Come up with 2 stories for each section of ESG
-- Create visualizations that accurately illustrate the stories
-
-
-
-## Storyline
-
-
-
-
-
-## References
-
-
-
-
-
+**Our countries are:**
+- Spain
+- South Africa
+- China
+- United Kingdom
+- United States
+- India

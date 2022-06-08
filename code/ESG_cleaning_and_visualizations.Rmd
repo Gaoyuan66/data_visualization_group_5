@@ -1,0 +1,619 @@
+---
+title: "ESG Group Project: Data cleaning & Visualizations"
+author: "Group 5"
+date: "`r Sys.Date()`"
+output: 
+    html_document:
+      number_sections: no
+      theme: cerulean
+      toc: yes
+      toc_depth: 3
+      toc_float:
+        collapsed: false
+      fontsize: 10pt
+      code_folding: show
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+
+
+```{r load-packages, echo=FALSE}
+library(tidyverse)
+library(extrafont)
+library(mosaic)
+library(vroom)
+library(ggtext)
+library(janitor)
+library(gapminder)
+library(ggrepel)
+library(patchwork)
+library(gghighlight)
+library(gridExtra)
+library(skimr)
+library(sf)
+library(lubridate)
+library(countrycode)
+
+loadfonts(device="pdf")
+# loadfonts(device="pdf") if you have a mac
+```
+
+## Data Cleaning
+
+```{r data_cleaning}
+
+esg_data_raw <- read_csv(here::here("data/ESG_csv","ESGData.csv"))
+
+glimpse(esg_data_raw)
+skimr::skim(esg_data_raw)
+ncol(esg_data_raw) #67 (col 66 is year 2050 and col 67 is a variable with no information names X67)
+#cols 5-65 contain yearly data from 1960-2020
+#most indicators have missing data for certainyears. 
+
+#long data 
+esg_data <- esg_data_raw %>% pivot_longer(cols=5:65, names_to = "Year") %>% select(-`2050`,-`X67`) %>% janitor::clean_names()
+
+
+## ALL OF THIS IS NOT SUPER USEFUL FOR ANALYIS (but still look)
+# Information on sources of different country series
+# esg_countryseries <- read_csv(here::here("data/ESG_csv","ESGCountry-Series.csv"))
+
+#Information on country statistics and methodology
+# esg_country <- read_csv(here::here("data/ESG_csv","ESGCountry.csv"))
+
+ #Shows sources of data
+# esg_footnote <- read_csv(here::here("data/ESG_csv","ESGFootNote.csv"))
+
+#Explain meaning of different features related to time series
+# esg_series_time <- read_csv(here::here("data/ESG_csv","ESGSeries-Time.csv"))
+# esg_series <- read_csv(here::here("data/ESG_csv","ESGSeries.csv"))
+
+```   
+
+
+```{r}
+
+#here we create the wide useable data with each variable as its own column
+esg_data_final <- esg_data  %>% select(-indicator_code) %>% group_by(indicator_name) %>% pivot_wider(names_from = indicator_name, values_from = value) %>% janitor::clean_names()
+
+#Writes to data folder
+write.csv(esg_data_final, here::here("data","esg_data_final.csv"))
+
+skim(esg_data_final)
+
+esg_data_final$year <- as.integer(esg_data_final$year)
+
+
+esg_data_final$continent = countrycode(sourcevar = esg_data_final$country_name,origin = "country.name",destination = "continent")
+
+esg_data_final %>% count(continent) %>% mutate(perc = round(100*n/sum(n),2))
+
+esg_data_final %>% count(year) %>% mutate(perc = round(100*n/sum(n),2))
+
+
+```
+
+## Animation of regulatory quality and government effectiveness
+
+```{r}
+# install.packages("gganimate")
+library(gganimate)
+
+animation_selection <- esg_data_final %>% filter(
+                          year >1999)
+
+animation1 <- ggplot(data = animation_selection,
+       mapping = aes(x = regulatory_quality_estimate,
+                     y = government_effectiveness_estimate,
+                     colour = continent,)) +
+  geom_point(alpha = 0.5) +
+  theme_bw() +
+  theme(legend.position="none") +
+  labs(title = "Year: {frame_time}", 
+       x = "Internet Usage", 
+       y = "Government Effectiveness Estimate") +    
+  transition_time(year)+
+  ease_aes("linear")
+
+animate(animation1, height=600, width = 600, duration=20)
+```
+
+```{r}
+countries_list <- c("China","United Kingdom","India","United States","South Africa", "Spain")
+
+our_data <-esg_data_final %>% filter(country_name %in% countries_list)
+
+```
+# Visualizations
+
+#### Note
+
+All other visualizations not shown here were done in Tableau using the cleaned data in this Rmd file.
+
+## Visualization for slide 3
+
+```{r, cleaning gdp data, message=FALSE, warning=FALSE}
+gdp <- read_csv(here::here("data","world_gdp.csv"))
+gdp <- gdp %>% clean_names()
+gdp <- pivot_longer(gdp,x1970_yr1970:x2020_yr2020,names_to = c("year","Year"),values_to = "amount",names_pattern = "x(.*)_yr(.*)")
+gdp <- gdp %>% select(country_name,country_code,series,year,amount)
+
+gdp_df <- gdp %>%
+  pivot_wider(id_cols = c(country_name,country_code,year),names_from = series,values_from = amount,values_fn = max) %>% 
+  clean_names() %>% 
+  select(-c(country_name,country_code,year)) %>% 
+  mutate_if(is.character,as.numeric)
+
+gdp_index <- gdp %>%
+  pivot_wider(id_cols = c(country_name,country_code,year),names_from = series,values_from = amount,values_fn = max) %>% 
+  select(country_name,country_code,year)
+gdp_index$year = as.Date(ISOdate(gdp_index$year, 1, 1),format = "%Y")
+
+gdp_final <- cbind(gdp_index,gdp_df)
+
+write_csv(gdp_final,here::here("data","gdp_final.csv"))
+
+```
+
+```{r, ploting gdp with world average, message=FALSE, warning=FALSE}
+world_gdp <- gdp_final %>% 
+  filter(year>"1990-01-01") %>% 
+  select(country_name,year,gdp_per_capita_ppp_current_international, gdp_ppp_current_international) %>% 
+  group_by(year) %>% 
+  summarise(avg_gdp_capita = mean(gdp_per_capita_ppp_current_international,na.rm = TRUE),
+            avg_gdp = mean(gdp_ppp_current_international,na.rm = TRUE)) 
+
+comparison_gdp <- gdp_final %>% 
+  filter(year>"1990-01-01",
+         country_name %in% c("China","India","United States","United Kingdom","Spain","South Africa")) %>% 
+  select(country_name,year,gdp_per_capita_ppp_current_international,gdp_ppp_current_international)
+
+gdp_plot <-  ggplot()+
+  geom_line(data=comparison_gdp,aes(x=year,y=gdp_per_capita_ppp_current_international,color=country_name),
+            size=0.5,
+            show.legend = FALSE)+
+  geom_line(data=world_gdp,aes(x=year,y=avg_gdp_capita),size=1,linetype = "dashed",color = "gray70")+
+    labs(title = "There has been stable economic growth within the six countries since 1990", 
+       subtitle = "GDP per capita evolution compared to world average",
+       x="Year",
+       y="GDP per capita PPP in $",
+       size=13)+
+  scale_colour_manual(values = c("India" = "#D0BC52","China" = "#FF6C67","Spain" = "#36D6D9","South Africa"= "#3CD175","United Kingdom"= "#8CBDFF","United States"= "#FF90F1"))+
+  geom_text(
+    data = data.frame(x = rep(as.Date("2019-01-1"),6), y = c(9000,13000,19000,40000,46000,62000), label = c("India","South Africa","China","Spain","United Kingdom","United States")),
+    aes(x = x, y = y, label = label, fontface = 4),
+    colour=c("#D0BC52","#3CD175","#FF6C67","#36D6D9","#8CBDFF","#FF90F1"),
+    family="Arial",
+    hjust = 0,
+    lineheight = .3,
+    size = 3,
+    inherit.aes = FALSE,
+  ) +
+  geom_text(
+    aes(x = as.Date("2019-01-1"), y = 22000, label = "World",fontface=4),
+    colour="gray70",
+    family="Arial",
+    hjust = 0,
+    lineheight = .3,
+    size = 4,
+    inherit.aes = FALSE,
+  ) +
+    annotate("rect",xmin=as.Date("2008-1-1"),xmax=as.Date("2009-1-1"),ymin=-Inf, ymax=Inf, fill="gray",alpha=0.5)+
+    geom_text(
+    aes(x = as.Date("2008-06-1"), y = 60000, label = "2008 Financial Crisis",fontface=3),
+    colour="black",
+    family="Arial",
+    hjust = 0.5,
+    lineheight = .3,
+    size = 3,
+    inherit.aes = FALSE,
+  ) +
+  xlim(as.Date("1990-01-01"),as.Date("2023-01-01"))+
+  theme(legend.position = "none",
+        panel.grid.minor.x = element_blank(),
+        panel.grid.minor.y = element_line(colour = "grey"),
+        panel.background=element_blank(),
+        axis.line = element_line(colour = "grey"),
+        plot.background=element_blank())
+```
+
+```{r, plotting CO2 data, message=FALSE, warning=FALSE}
+world_co2 <- esg_data_final %>% 
+  select(country_name,year, co2_emissions_metric_tons_per_capita) %>% 
+  filter(year>1990,
+         !is.na(co2_emissions_metric_tons_per_capita)) %>% 
+  group_by(year) %>% 
+  summarise(avg_emission = mean(co2_emissions_metric_tons_per_capita,na.rm=TRUE)) 
+  
+comparison_co2_five <- esg_data_final %>% 
+  filter(year>1990,
+         country_name %in% c("India","United States","United Kingdom","Spain","South Africa")) 
+
+comparison_co2_china <- esg_data_final %>% 
+  filter(year>1990,
+         country_name =="China") 
+
+co2_plot <-   ggplot()+
+  geom_line(data=world_co2,aes(x=year,y=avg_emission),
+            size=1,linetype = "dashed",color = "gray70")+
+  geom_line(data=comparison_co2_five,
+            aes(x=year,y=co2_emissions_metric_tons_per_capita,color=country_name),
+            show.legend = FALSE,
+            size=0.5,
+            alpha=0.7)+
+  scale_colour_manual(values = c("India" = "#D0BC52","Spain" = "#36D6D9","South Africa"= "#3CD175","United Kingdom"= "#8CBDFF","United States"= "#FF90F1"))+
+  geom_line(data=comparison_co2_china,
+            aes(x=year,y=co2_emissions_metric_tons_per_capita),color="#FF6C67",size=1)+
+      labs(title="China's rapid economic growth is partly at the expense of the environment",
+       subtitle = "CO2 emission per capita evolution compared to world average",
+       x="Year",
+       y="CO2 emission per capita in T",
+       size=13)+
+  geom_text(
+    data = data.frame(x = rep(1989,6), y = c(0.7,2.3,6,7,10.5,20), 
+                      label = c("India","China","Spain","South Africa","United Kingdom","United States")),
+    aes(x = x, y = y, label = label, fontface = 4),
+    colour=c("#D0BC52","#FF6C67","#36D6D9","#3CD175","#8CBDFF","#FF90F1"),
+    family="Arial",
+    hjust = 0,
+    lineheight = .3,
+    size = 3,
+    inherit.aes = FALSE,
+  ) +
+    geom_text(
+    aes(x = 2019, y = 4, label = "World",fontface=4),
+    colour="gray70",
+    family="Arial",
+    hjust = 0,
+    lineheight = .3,
+    size = 4,
+    inherit.aes = FALSE,
+  ) +
+  theme(legend.position = "none",
+        panel.grid.minor.x = element_blank(),
+        panel.grid.minor.y = element_line(colour = "grey"),
+        panel.background=element_blank(),
+        axis.line = element_line(colour = "grey"),
+        plot.background=element_blank())
+
+co2_plot
+grid.arrange(gdp_plot,co2_plot,nrow=2)
+
+```
+
+## Visualization for slide 4
+
+```{r, renewable energy output, message=FALSE, warning=FALSE}
+
+renewable <- esg_data_final %>% 
+  select(country_name,year,renewable_electricity_output_percent_of_total_electricity_output) %>% 
+  filter(country_name %in% c("China","India","United States","United Kingdom","Spain","South Africa"),
+         !is.na(renewable_electricity_output_percent_of_total_electricity_output)) %>% 
+  mutate(UK = ifelse(country_name == "United Kingdom", TRUE, FALSE)) %>% 
+  ggplot(aes(x=year,y=renewable_electricity_output_percent_of_total_electricity_output,color=country_name)) +
+  geom_line(
+    data = function(x) filter(x, UK),
+    size = 1,
+    color = "seagreen"
+  ) +
+  geom_line(data = function(x) filter(x, !UK),
+            size=0.5,alpha = 0.7,show.legend = FALSE)+
+  scale_colour_manual(values = c("India" = "#D0BC52","China" ="#FF6C67", "Spain" = "#36D6D9","South Africa"= "#3CD175","United States"= "#FF90F1"))+
+  labs(title = "Renewable electricity output in UK has seen a rapid increase since 2010",
+       subtitle = "Renewable electricity output as percentage of total electricity output",
+       x="Year",
+       y="Renewable electricity percentage",
+       size=13)+
+  theme(legend.position = "none",
+        panel.grid.minor.x = element_blank(),
+        panel.grid.minor.y = element_line(colour = "grey"),
+        panel.background=element_blank(),
+        axis.line = element_line(colour = "grey"),
+        plot.background=element_blank())+
+    annotate("rect",xmin=2010,xmax=2015,ymin=-Inf, ymax=Inf, fill="palegreen4",alpha=0.3)+
+  geom_text(
+    data = data.frame(x = rep(1989,6), y = c(-1,4,12,18,22,26), label = c("South Africa","United Kingdom","United States","Spain","China","India")),
+    aes(x = x, y = y, label = label, fontface=4),
+    colour=c("#3CD175", "seagreen", "#FF90F1","#36D6D9", "#FF6C67", "#D0BC52"),
+    family="Arial",
+    hjust = 0,
+    lineheight = .3,
+    size = 3,
+    inherit.aes = FALSE,
+  )
+
+renewable
+```
+
+
+
+```{r, UK greenhouse gas contribution, message=FALSE, warning=FALSE}
+greenhouse <- readxl::read_xls(here::here("data","Greenhouse_UK.xls"))
+greenhouse <- greenhouse %>% clean_names() %>% 
+  mutate(
+         manufacture = as.numeric(manufacturing),
+         electricity_AC_supply = as.numeric(electricity_gas_steam_and_air_conditioning_supply),
+         transport_storage = as.numeric(transport_and_storage),
+         households = as.numeric(households)) %>% 
+  select(year,manufacture,electricity_AC_supply,transport_storage,households)
+
+greenhouse$year = as.Date(ISOdate(greenhouse$year, 1, 1),format = "%Y")
+
+greenhouse <- greenhouse %>% pivot_longer(manufacture:households,names_to = "industry",values_to = "emission")
+
+plot_uk <- ggplot(greenhouse,aes(x=year,y=emission,fill=factor(industry, levels = c("manufacture","electricity_AC_supply","households","transport_storage"))))+
+  geom_area(alpha = 0.8,show.legend = FALSE)+
+  scale_fill_manual("Industry",values=c("darkseagreen4","darkseagreen3","lightgoldenrod3","wheat4"))+
+  labs(title = str_wrap("Energy Supply sector continues its downward trend in contribution to overall UK greenhouse gas emission",85),
+       subtitle = "UK Greenhouse gas emissions for the three highest-emitting industries, and households",
+       x="Year",
+       y="Greenhouse gas emission (MT CO2)",
+       size=13)+
+  geom_text(
+    data = data.frame(x = rep(as.Date("1995-01-1"),4), y = c(50,175,320,500), label = c("Manufacturing","Households","Energy Supply","Transport and Storage")),
+    aes(x = x, y = y, label = label, fontface=4),
+    color= c("gray40","gray40","white","gray40"),
+    family="Arial",
+    hjust = 0,
+    lineheight = .5,
+    size = 3,
+    inherit.aes = FALSE,
+  ) +
+    theme(legend.position = "none",
+        panel.grid.minor.x = element_blank(),
+        panel.grid.minor.y = element_line(colour = "grey"),
+        panel.background=element_blank(),
+        axis.line = element_line(colour = "grey"),
+        plot.background=element_blank())
+
+grid.arrange(renewable,plot_uk,nrow=2)
+
+
+```
+
+## Visualization of correlation for government effectiveness and regulatory quality
+
+```{r}
+library(GGally)
+esg_data_final %>% 
+  select(country_name, year,ease_of_doing_business_rank_1_most_business_friendly_regulations,
+         government_effectiveness_estimate, regulatory_quality_estimate) %>% #keep Y variable last
+  ggcorr(method = c("pairwise", "pearson"), layout.exp = 3,label_round=2, label = TRUE,label_size = 2,hjust = 1)
+
+
+esg_data_final %>% filter(continent != "NA") %>% ggplot(aes(x=regulatory_quality_estimate, y=government_effectiveness_estimate, color=continent)) +
+  geom_point() + labs(
+       title = "Almost perfect correlation between Government Effectiveness and Regulatory Quality",
+       subtitle = "Scatterplot of yearly values for each country grouped by continent",
+       caption = "Source: World Bank ESG Data",
+       x= "Regulatory Quality Estimate",
+       y = "Government Effectiveness Estimate",
+       color="Continent") +
+  
+  theme(panel.background=element_blank(),
+          panel.border=element_blank(),
+          plot.background=element_blank()) +
+  theme(axis.line = element_line(colour = "black")) +
+    theme(text=element_text(size=11, family="Arial")) +
+    theme(plot.title.position = "plot") +
+    theme(plot.subtitle = element_text( size=11)) +
+  geom_text(
+    data = data.frame(x = -1, y = 1.5, label = "2019"),
+    aes(x = x, y = y, label = "Correlation = 0.93"),
+    colour="black",
+    family="Arial",
+    hjust = 0.5,
+    lineheight = .8,
+    inherit.aes = FALSE,
+  )
+
+
+```
+### Comparison over the years
+
+```{r}
+#regulatory quality average
+world_avg_reg<- esg_data_final %>% 
+  select(country_name, regulatory_quality_estimate, year, continent) %>%
+  filter(regulatory_quality_estimate != "NA", continent != "NA") %>%
+  group_by(year) %>%
+  summarize(world_avg = mean(regulatory_quality_estimate),
+            country_name = "World")
+
+world_avg_govteffec<- esg_data_final %>% 
+  select(country_name, government_effectiveness_estimate, year, continent) %>%
+  filter(government_effectiveness_estimate != "NA", continent != "NA") %>%
+  group_by(year) %>%
+  summarize(world_avg = mean(government_effectiveness_estimate),
+            country_name = "World")
+
+
+one<-our_data %>% filter(government_effectiveness_estimate != "NA") %>% ggplot(aes(y=government_effectiveness_estimate, x=year, group=country_name, color=country_name)) + 
+  geom_smooth(se=FALSE) +
+  geom_smooth(data=world_avg_reg, aes(x=year, y=world_avg), linetype = "dashed",color = "gray70") + labs(
+       title = "Comparison of Government Effectiveness and Regulatory Quality",
+       subtitle = "Lineplots over years for selected countries compared to world average",
+       x= "",
+       y = "Government Effectiveness Estimate",
+       color="Country") +
+  theme(panel.background=element_blank(),
+          panel.border=element_blank(),
+          plot.background=element_blank()) +
+  theme(axis.line = element_line(colour = "black")) +
+    theme(text=element_text(size=14, family="Arial")) +
+    theme(plot.title.position = "plot",
+          legend.position = "none") +
+    theme(plot.subtitle = element_text( size=11),
+           axis.title=element_text(size=12)) +
+  scale_y_continuous(breaks=c(0,1,2)) +
+   geom_text(
+    data = data.frame(x = c(2019,2012,2018.5,2018,2016,2013), y = c(.5,.5,.75,1.15,1.7,1.4), label = c("India","South Africa","China","Spain","United Kingdom","United States")),
+    aes(x = x, y = y, label = label, fontface=4),
+    colour=c("#D0BC52","#3CD175","#FF6C67","#36D6D9","#8CBDFF","#FF90F1"),
+    family="Arial",
+    hjust = 0,
+    lineheight = .3,
+    size = 3,
+    inherit.aes = FALSE,
+  ) +
+    geom_text(
+    aes(x = 2018, y = 0, label = "World",fontface=4),
+    colour="gray70",
+    family="Arial",
+    hjust = 0,
+    lineheight = .3,
+    size = 4,
+    inherit.aes = FALSE,
+  )
+
+
+
+
+
+ two<- our_data %>% filter(regulatory_quality_estimate != "NA") %>% ggplot(aes(y=regulatory_quality_estimate, x=year, group=country_name, color=country_name)) + 
+  geom_smooth(se=FALSE) + 
+   geom_smooth(data=world_avg_reg, aes(x=year, y=world_avg), linetype = "dashed",color = "gray70") +
+  labs(
+       title = "",
+       x= "",
+       y = "Regulatory Quality Estimate",
+       color="Country") +
+  theme(panel.background=element_blank(),
+          panel.border=element_blank(),
+          plot.background=element_blank()) +
+  theme(axis.line = element_line(colour = "black")) +
+    theme(text=element_text(size=14, family="Arial")) +
+    theme(plot.title.position = "plot",
+          legend.position = "none") +
+    theme(plot.subtitle = element_text( size=11),
+          axis.title=element_text(size=12)) +
+   geom_text(
+    data = data.frame(x = c(2018.5,2016,2018.5,2018,2017,2016), y = c(-.5,.4,-.4,1,1.8,1.5), label = c("India","South Africa","China","Spain","United Kingdom","United States")),
+    aes(x = x, y = y, label = label, fontface=4),
+    colour=c("#D0BC52","#3CD175","#FF6C67","#36D6D9","#8CBDFF","#FF90F1"),
+    family="Arial",
+    hjust = 0,
+    lineheight = .3,
+    size = 3,
+    inherit.aes = FALSE,
+  ) +
+    geom_text(
+    aes(x = 2018, y = 0, label = "World",fontface=4),
+    colour="gray70",
+    family="Arial",
+    hjust = 0,
+    lineheight = .3,
+    size = 4,
+    inherit.aes = FALSE,
+  )
+   
+ 
+one
+two
+
+one/two
+#put spain
+#change style
+#china election and south africa explanation
+```
+
+## Visualizations for Migration & Political Stability
+*Below is the code for slide 8*
+
+```{r, clean governance data, echo=TRUE}
+gov_data_final <- esg_data_final %>% select(country_name, country_code, year, net_migration, political_stability_and_absence_of_violence_terrorism_estimate) %>% 
+  mutate(net_migration = net_migration/1000000) %>% 
+  filter(country_name %in% c("China","India","United States","United Kingdom","Spain","South Africa")) %>% 
+  filter ( !is.na (net_migration)) %>% 
+  filter( !is.na( political_stability_and_absence_of_violence_terrorism_estimate))
+
+```
+
+
+
+
+```{r}
+net_migration <- gov_data_final %>% ggplot(aes(x=year,y=net_migration,color=country_name) , format(y, scientific = FALSE))+
+  geom_line(size=0.5,show.legend = FALSE)+
+  scale_colour_manual(values = c("India" = "#D0BC52","China"="#FF6C67","Spain" = "#36D6D9","South Africa"= "#3CD175","United Kingdom"= "#8CBDFF","United States"= "#FF90F1"))+
+  labs(title = "Western countries have positive net migration over the years", 
+       subtitle = "Net migration in the country measured by million people",
+       x="Year",
+       y="Net migration in million",
+       size=13)+
+  geom_text(
+    data = data.frame(x = rep(2017.5,6), y = c(-2.6,-1.8,0.2,0.8,1.2,4.8), 
+                      label = c("India","China","Spain","South Africa","United Kingdom","United States")),
+    aes(x = x, y = y, label = label, fontface = 4),
+    colour=c("#D0BC52","#FF6C67","#36D6D9","#3CD175","#8CBDFF","#FF90F1"),
+    family="Arial",
+    hjust = 0,
+    lineheight = .3,
+    size = 3,
+    inherit.aes = FALSE,
+  ) +
+  geom_text(
+    aes(x = 2019, y = -0.2, label = "World", fontface = 4),
+    colour="gray70",
+    family="Arial",
+    hjust = 0,
+    lineheight = .3,
+    size = 4,
+    inherit.aes = FALSE,
+  ) +
+    theme(legend.position = "none",
+        panel.grid.minor.x = element_blank(),
+        panel.grid.minor.y = element_line(colour = "grey"),
+        panel.background=element_blank(),
+        axis.line = element_line(colour = "grey"),
+        plot.background=element_blank())+
+  geom_hline(yintercept=0, linetype="dashed", color="gray60", size=1)+
+  xlim(2002,2020)+
+  annotate("rect",xmin=-Inf,xmax=Inf,ymin=0, ymax=Inf, fill="skyblue2",alpha=0.1)+
+  annotate("rect",xmin=-Inf,xmax=Inf,ymin=-Inf, ymax=0, fill="gray90",alpha=0.5)
+
+net_migration
+
+
+```
+```{r, average migration}
+gov_averages <- gov_data_final %>% 
+              group_by(country_name) %>%   
+                mutate ( total_mig = sum(net_migration) ) %>% 
+               mutate ( total_pol = sum(political_stability_and_absence_of_violence_terrorism_estimate) ) %>% 
+      #diving by 20 to average the migration across 10 years since data is from 2002 - 2012
+              mutate (avg_across_migration = total_mig / 10) %>% 
+              mutate (avg_across_political_stability = total_pol / 10) %>% 
+              group_by(country_name)
+
+gov_averages <- gov_averages %>% 
+                  filter( year %in% c("2017" ) ) %>% 
+                  select ( country_name , year, avg_across_migration, avg_across_political_stability )
+
+gov_averages %>% 
+  ggplot(aes(y = avg_across_migration, 
+             x = fct_reorder(country_name, -avg_across_migration), fill=country_name)) +
+  geom_col()+
+  scale_colour_manual(values = c("India" = "#D0BC52","China"="#FF6C67","Spain" = "#36D6D9","South Africa"= "#3CD175","United Kingdom"= "#8CBDFF","United States"= "#FF90F1"))+
+labs(title = "Political stability is higher for countries with net positive migration", 
+     subtitle = "Average 10 year estimate political stability and absence of violence/terrorism from 2002-2012",
+       x="Country",
+       y="Average Political stability estimate",
+       size=13)+
+        theme(legend.position = "none",
+        panel.grid.minor.x = element_blank(),
+        panel.grid.minor.y = element_line(colour = "grey"),
+        panel.background=element_blank(),
+        axis.line = element_line(colour = "grey"),
+        plot.background=element_blank())+
+  annotate("rect",xmin=-Inf,xmax="South Africa",ymin=-Inf, ymax=Inf, fill="skyblue2",alpha=0.1)+
+  annotate("rect",xmin="South Africa",xmax=Inf,ymin=-Inf, ymax=Inf, fill="gray90",alpha=0.5)+
+    geom_hline(yintercept=0, linetype="dashed", color="gray60", size=1)
+  
+
+```
+
