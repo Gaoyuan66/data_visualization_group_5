@@ -24,37 +24,117 @@ library(gghighlight)
 library(skimr)
 library(sf)
 library(lubridate)
-
-loadfonts(device="pdf")
-# loadfonts(device="pdf") if you have a mac
+library(janitor)
+library(countrycode)
 ```
 
-```{r esg}
 
-
+```{r}
 esg_data_raw <- read_csv(here::here("data/ESG_csv","ESGData.csv"))
+gdp_per_cap_raw <- read_csv(here::here("data","API_NY.GDP.PCAP.CD_DS2_en_csv_v2_3159040.csv"),skip = 3)
 
-glimpse(esg_data_raw)
-skimr::skim(esg_data_raw)
-ncol(esg_data_raw) #67 (col 66 is year 2050 and col 67 is a variable with no information names X67)
-#cols 5-65 contain yearly data from 1960-2020
-#most indicators have missing data for certainyears. 
 
-esg_data <- esg_data_raw %>% pivot_longer(cols=5:65, names_to = "Year") %>% select(-`2050`,-`X67`)
+esg_data <- esg_data_raw %>% pivot_longer(cols=5:65, names_to = "Year") %>% clean_names() %>% select(-x2050,-x67) 
+gdp_per_cap <- gdp_per_cap_raw %>% pivot_longer(cols=5:65, names_to = "Year") %>% clean_names() %>% select(-x66) 
+esg_gdp_data <- rbind(esg_data, gdp_per_cap)
 
-## ALL OF THIS IS NOT SUPER USEFUL FOR ANALYIS (but still look)
-# Information on sources of different country series
-# esg_countryseries <- read_csv(here::here("data/ESG_csv","ESGCountry-Series.csv"))
+esg_data_final <- esg_gdp_data  %>%
+  select(-indicator_code) %>%
+  pivot_wider(names_from = indicator_name, values_from = value) %>% 
+  mutate(continent = countrycode(sourcevar = country_name,
+                            origin = "country.name",
+                            destination = "continent")) %>% 
+  clean_names()
 
-#Information on country statistics and methodology
-# esg_country <- read_csv(here::here("data/ESG_csv","ESGCountry.csv"))
+write_csv(esg_data_final,"esg_data_final.csv")
+colnames(esg_data_final)
+esg_data_final$population_density_people_per_sq_km_of_land_area
+```
 
- #Shows sources of data
-# esg_footnote <- read_csv(here::here("data/ESG_csv","ESGFootNote.csv"))
+Env:
+ [3] "Adjusted savings: natural resources depletion (% of GNI)"                                                 
+ [4] "Adjusted savings: net forest depletion (% of GNI)"                                                        
+ [5] "Agricultural land (% of land area)"                                                                       
+ [6] "Agriculture, forestry, and fishing, value added (% of GDP)"                                               
+ [7] "Annual freshwater withdrawals, total (% of internal resources)"
+ [11] "CO2 emissions (metric tons per capita)"  
+ [13] "Cooling Degree Days (projected change in number of degree Celsius)"
+ [14] "Droughts, floods, extreme temperatures (% of population, average 1990-2009)"   
+ [16] "Electricity production from coal sources (% of total)"                                                    
+[17] "Energy imports, net (% of energy use)"                                                                    
+[18] "Energy intensity level of primary energy (MJ/$2011 PPP GDP)"                                              
+[19] "Energy use (kg of oil equivalent per capita)"
+[22] "Forest area (% of land area)"                                                                             
+[23] "Fossil fuel energy consumption (% of total)"
+[25] "GHG net emissions/removals by LUCF (Mt of CO2 equivalent)"
+[29] "Heat Index 35 (projected change in days)"
+[36] "Mammal species, threatened"                                                                               
+[37] "Maximum 5-day Rainfall, 25-year Return Level (projected change in mm)"                                    
+[38] "Mean Drought Index (projected change, unitless)"                                                          
+[39] "Methane emissions (metric tons of CO2 equivalent per capita)" 
+[42] "Nitrous oxide emissions (metric tons of CO2 equivalent per capita)" 
+[44] "People using safely managed drinking water services (% of population)"
+[45] "People using safely managed sanitation services (% of population)"
+[46] "PM2.5 air pollution, mean annual exposure (micrograms per cubic meter)"
+[56] "Renewable electricity output (% of total electricity output)"
+[57] "Renewable energy consumption (% of total final energy consumption)"
 
-#Explain meaning of different features related to time series
-# esg_series_time <- read_csv(here::here("data/ESG_csv","ESGSeries-Time.csv"))
-# esg_series <- read_csv(here::here("data/ESG_csv","ESGSeries.csv"))
+Social:
+  Livelihood:
+ [1] "Access to clean fuels and technologies for cooking (% of population)"                                     
+ [2] "Access to electricity (% of population)"
+[10] "Children in employment, total (% of children ages 7-14)"
+[34] "Life expectancy at birth, total (years)"
+[50] "Poverty headcount ratio at national poverty lines (% of population)" 
+[51] "Prevalence of overweight (% of adults)"                                                                   
 
-```   
+  Poverty:
+[21] "Food production index (2014-2016 = 100)"[26] "Gini index (World Bank estimate)"
+[52] "Prevalence of undernourishment (% of population)"
 
+  Births & Deaths:
+[9] "Cause of death, by communicable diseases and maternal, prenatal and nutrition conditions (% of total)"
+[20] "Fertility rate, total (births per woman)"
+[30] "Hospital beds (per 1,000 people)"
+[40] "Mortality rate, under-5 (per 1,000 live births)"
+[66] "Unmet need for contraception (% of married women ages 15-49)"
+
+  Education:
+[35] "Literacy rate, adult total (% of people ages 15 and above)"  
+[60] "School enrollment, primary (% gross)"                                                                     
+[61] "School enrollment, primary and secondary (gross), gender parity index (GPI)"
+
+  Equality:
+[53] "Proportion of seats held by women in national parliaments (%)"
+[54] "Ratio of female to male labor force participation rate (%) (modeled ILO estimate)"
+
+  Economic:
+ [8] "Annualized average growth rate in per capita real survey mean consumption or income, total population (%)"
+[15] "Ease of doing business rank (1=most business-friendly regulations)"
+[24] "GDP growth (annual %)"
+[31] "Income share held by lowest 20%"                                                                          
+[33] "Labor force participation rate, total (% of total population ages 15-64) (modeled ILO estimate)"          
+[65] "Unemployment, total (% of total labor force) (modeled ILO estimate)" 
+
+  Demographic:
+[41] "Net migration"                                                                                          
+[48] "Population ages 65 and above (% of total population)"                                                     
+[49] "Population density (people per sq. km of land area)"                                                      
+
+  Technology: 
+[32] "Individuals using the Internet (% of population)"
+[43] "Patent applications, residents"
+[58] "Research and development expenditure (% of GDP)"
+[62] "Scientific and technical journal articles"
+
+Governance:
+
+[12] "Control of Corruption: Estimate"                                                                          
+[27] "Government Effectiveness: Estimate"                                                                       
+[28] "Government expenditure on education, total (% of government expenditure)" 
+[47] "Political Stability and Absence of Violence/Terrorism: Estimate"   
+[55] "Regulatory Quality: Estimate"
+[59] "Rule of Law: Estimate" 
+[63] "Strength of legal rights index (0=weak to 12=strong)"  
+[64] "Terrestrial and marine protected areas (% of total territorial area)"
+[67] "Voice and Accountability: Estimate"  

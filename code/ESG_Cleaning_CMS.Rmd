@@ -1,0 +1,102 @@
+---
+title: "Clara_Data_Cleaning"
+author: "Group 5"
+date: "11/12/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+```{r}
+install.packages(countrycode)
+```
+
+
+```{r load-packages, echo=FALSE}
+library(tidyverse)
+library(extrafont)
+library(mosaic)
+library(vroom)
+library(ggtext)
+library(gapminder)
+library(ggrepel)
+library(patchwork)
+library(gghighlight)
+library(skimr)
+library(sf)
+library(lubridate)
+library(countrycode)
+
+loadfonts(device="pdf")
+# loadfonts(device="pdf") if you have a mac
+```
+
+```{r esg}
+
+
+esg_data_raw <- read_csv(here::here("data/ESG_csv","ESGData.csv"))
+
+glimpse(esg_data_raw)
+skimr::skim(esg_data_raw)
+ncol(esg_data_raw) #67 (col 66 is year 2050 and col 67 is a variable with no information names X67)
+#cols 5-65 contain yearly data from 1960-2020
+#most indicators have missing data for certainyears. 
+
+#long data 
+esg_data <- esg_data_raw %>% pivot_longer(cols=5:65, names_to = "Year") %>% select(-`2050`) %>% janitor::clean_names()
+
+
+## ALL OF THIS IS NOT SUPER USEFUL FOR ANALYIS (but still look)
+# Information on sources of different country series
+# esg_countryseries <- read_csv(here::here("data/ESG_csv","ESGCountry-Series.csv"))
+
+#Information on country statistics and methodology
+# esg_country <- read_csv(here::here("data/ESG_csv","ESGCountry.csv"))
+
+ #Shows sources of data
+# esg_footnote <- read_csv(here::here("data/ESG_csv","ESGFootNote.csv"))
+
+#Explain meaning of different features related to time series
+# esg_series_time <- read_csv(here::here("data/ESG_csv","ESGSeries-Time.csv"))
+# esg_series <- read_csv(here::here("data/ESG_csv","ESGSeries.csv"))
+
+```   
+
+```{r}
+
+
+
+#here we create the wide useable data with each variable as its own column
+esg_data_final <- esg_data  %>% select(-indicator_code) %>% group_by(indicator_name) %>% pivot_wider(names_from = indicator_name, values_from = value)
+
+
+skim(esg_data_final)
+
+esg_data_final %>% count(country_name) %>% mutate(perc = round(100*n/sum(n),2))
+
+esg_data_final %>% count(year) %>% mutate(perc = round(100*n/sum(n),2))
+  
+```
+```{r}
+my.df <- data.frame(esg_data_final)
+
+my.df %>% mutate(continent = " ")
+
+my.df$continent <- countrycode(sourcevar = my.df[, "country_name"],
+                            origin = "country.name",
+                            destination = "continent")
+
+ncol(my.df)
+
+skim(my.df)
+```
+
+```{r}
+write.csv(my.df, "my.df.esg.csv")
+
+write.csv(my.df, file = "my.df.esg.csv", row.names = FALSE)
+```
+
+
